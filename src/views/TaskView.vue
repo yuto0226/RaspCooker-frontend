@@ -4,6 +4,7 @@ import { getPaginationRowModel } from '@tanstack/vue-table'
 import type { TableColumn } from '@nuxt/ui'
 import api from '@/api/api'
 import { AxiosError } from 'axios'
+import { useRouter } from 'vue-router'
 
 const UButton = resolveComponent('UButton')
 const UBadge = resolveComponent('UBadge')
@@ -20,6 +21,8 @@ type Task = {
 const data = ref<Task[]>([])
 const loading = ref(true)
 const globalFilter = ref('') // 新增全域篩選條件
+
+const router = useRouter()
 
 function fetchTasks() {
   loading.value = true
@@ -82,7 +85,10 @@ const columns: TableColumn<Task>[] = [
   {
     accessorKey: 'uuid',
     header: createSortableHeader('UUID'), // 加入排序功能
-    cell: ({ row }) => `${row.getValue('uuid')}`
+    cell: ({ row }) => h('button', {
+      class: 'text-blue-500 underline',
+      onClick: () => router.push(`/task/${row.getValue('uuid')}`)
+    }, row.getValue('uuid'))
   },
   {
     accessorKey: 'file_path',

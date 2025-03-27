@@ -24,6 +24,11 @@ const router = createRouter({
           component: () => import('../views/TaskView.vue')
         },
         {
+          path: '/task/:id',
+          name: 'task_result',
+          component: () => import('../views/TaskResultView.vue')
+        },
+        {
           path: '/shell',
           name: 'shell',
           component: () => import('../views/ShellView.vue')
