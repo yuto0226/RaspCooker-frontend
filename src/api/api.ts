@@ -26,7 +26,7 @@ api.interceptors.response.use(
       authStore.logout()
     }
     return Promise.reject(error)
-  }
+  },
 )
 
 export default api

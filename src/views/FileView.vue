@@ -18,23 +18,27 @@ const data = ref<File[]>([])
 const loading = ref(true)
 
 function fetchFiles() {
-  api.get('/file').then((response: any) => {
-    data.value = response.data.files.map((file: any) => ({
-      name: file.filename,
-      size: file.size,
-      create_time: new Date(file.created_time * 1000).toLocaleString(),
-    }))
-  }).catch((error: any) => {
-    if (error.response) {
-      console.error('Server responded with an error:', error.response)
-    } else if (error.request) {
-      console.error('No response received:', error.request)
-    } else {
-      console.error('Error setting up request:', error.message)
-    }
-  }).finally(() => {
-    loading.value = false
-  })
+  api
+    .get('/file')
+    .then((response: any) => {
+      data.value = response.data.files.map((file: any) => ({
+        name: file.filename,
+        size: file.size,
+        create_time: new Date(file.created_time * 1000).toLocaleString(),
+      }))
+    })
+    .catch((error: any) => {
+      if (error.response) {
+        console.error('Server responded with an error:', error.response)
+      } else if (error.request) {
+        console.error('No response received:', error.request)
+      } else {
+        console.error('Error setting up request:', error.message)
+      }
+    })
+    .finally(() => {
+      loading.value = false
+    })
 }
 
 // 初始化時載入檔案列表
@@ -57,7 +61,7 @@ function createSortableHeader(label: string) {
           : 'i-lucide-arrow-down-wide-narrow'
         : 'i-lucide-arrow-up-down',
       class: '-mx-2.5',
-      onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+      onClick: () => column.toggleSorting(column.getIsSorted() === 'asc'),
     })
   }
 }
@@ -66,20 +70,20 @@ const columns: TableColumn<File>[] = [
   {
     accessorKey: 'name',
     header: createSortableHeader('Name'),
-    cell: ({ row }) => `${row.getValue('name')}`
+    cell: ({ row }) => `${row.getValue('name')}`,
   },
   {
     accessorKey: 'size',
     header: createSortableHeader('Size (bytes)'),
-    cell: ({ row }) => `${row.getValue('size')}`
+    cell: ({ row }) => `${row.getValue('size')}`,
   },
   {
     accessorKey: 'create_time',
     header: createSortableHeader('Created Time'),
-    cell: ({ row }) => `${row.getValue('create_time')}`
+    cell: ({ row }) => `${row.getValue('create_time')}`,
   },
   {
-    id: 'action'
+    id: 'action',
   },
 ]
 
@@ -87,12 +91,13 @@ const globalFilter = ref('')
 
 function handleRun(file: File) {
   console.log(`Running file: ${file.name}`)
-  api.post(`/task/${file.name}/run`)
+  api
+    .post(`/task/${file.name}/run`)
     .then(() => {
       toast.add({
         title: `File "${file.name}" is running.`,
         color: 'info',
-        icon: 'i-lucide-play'
+        icon: 'i-lucide-play',
       })
     })
     .catch((error: any) => {
@@ -100,7 +105,7 @@ function handleRun(file: File) {
       toast.add({
         title: `Failed to run file "${file.name}".`,
         color: 'error',
-        icon: 'i-lucide-alert-circle'
+        icon: 'i-lucide-alert-circle',
       })
     })
 }
@@ -110,31 +115,32 @@ function handleEdit(file: File) {
   toast.add({
     title: `File "${file.name}" is being edited.`,
     color: 'warning',
-    icon: 'i-lucide-edit'
+    icon: 'i-lucide-edit',
   })
 }
 
 function handleDelete(file: File) {
   console.log(`Deleting file: ${file.name}`)
-  api.delete(`/file/${file.name}`)
+  api
+    .delete(`/file/${file.name}`)
     .then(() => {
       toast.add({
         title: `File "${file.name}" has been deleted.`,
         color: 'error',
-        icon: 'i-lucide-trash'
+        icon: 'i-lucide-trash',
       })
       // 更新檔案列表
-      data.value = data.value.filter(f => f.name !== file.name)
+      data.value = data.value.filter((f) => f.name !== file.name)
     })
     .catch((error: any) => {
       console.error(`Failed to delete file "${file.name}":`, error)
       toast.add({
         title: `Failed to delete file "${file.name}".`,
         color: 'error',
-        icon: 'i-lucide-alert-circle'
+        icon: 'i-lucide-alert-circle',
       })
     })
-    fetchFiles()
+  fetchFiles()
 }
 
 function getDropdownActions(file: File): DropdownMenuItem[][] {
@@ -148,29 +154,29 @@ function getDropdownActions(file: File): DropdownMenuItem[][] {
           toast.add({
             title: 'File name copied to clipboard!',
             color: 'success',
-            icon: 'i-lucide-circle-check'
+            icon: 'i-lucide-circle-check',
           })
-        }
-      }
+        },
+      },
     ],
     [
       {
         label: 'Run',
         icon: 'i-lucide-play',
-        onSelect: () => handleRun(file)
+        onSelect: () => handleRun(file),
       },
       {
         label: 'Edit',
         icon: 'i-lucide-edit',
-        onSelect: () => handleEdit(file)
+        onSelect: () => handleEdit(file),
       },
       {
         label: 'Delete',
         icon: 'i-lucide-trash',
         color: 'error',
-        onSelect: () => handleDelete(file)
-      }
-    ]
+        onSelect: () => handleDelete(file),
+      },
+    ],
   ]
 }
 </script>
@@ -180,11 +186,23 @@ function getDropdownActions(file: File): DropdownMenuItem[][] {
     <div class="flex px-4 py-3.5 border-b border-(--ui-border-accented)">
       <UInput v-model="globalFilter" class="max-w-sm" placeholder="Filter..." />
     </div>
-    <UTable :loading="loading" v-model:global-filter="globalFilter" loading-color="primary" loading-animation="carousel"
-      :data="data" :columns="columns" class="flex-1">
+    <UTable
+      :loading="loading"
+      v-model:global-filter="globalFilter"
+      loading-color="primary"
+      loading-animation="carousel"
+      :data="data"
+      :columns="columns"
+      class="flex-1"
+    >
       <template #action-cell="{ row }">
         <UDropdownMenu :items="getDropdownActions(row.original)">
-          <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" aria-label="Actions" />
+          <UButton
+            icon="i-lucide-ellipsis-vertical"
+            color="neutral"
+            variant="ghost"
+            aria-label="Actions"
+          />
         </UDropdownMenu>
       </template>
     </UTable>

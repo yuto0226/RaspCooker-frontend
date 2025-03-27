@@ -16,7 +16,11 @@ const state = reactive({
   host: '127.0.0.1:5000', // 預設值
 })
 
-const validate = (state: { account: string | undefined; password: string | undefined; host: string }): FormError[] => {
+const validate = (state: {
+  account: string | undefined
+  password: string | undefined
+  host: string
+}): FormError[] => {
   const errors = []
   if (!state.account) errors.push({ name: 'account', message: 'Required' })
   if (!state.password) errors.push({ name: 'password', message: 'Required' })
@@ -44,7 +48,7 @@ async function onSubmit(event: FormSubmitEvent<Record<string, unknown>>) {
     state.account = undefined
     state.password = undefined
     state.host = '127.0.0.1:5000' // 重置為預設值
-    router.push('/')
+    router.push('/file')
   } catch (error) {
     handleError(error as AxiosError)
   }
@@ -74,11 +78,17 @@ async function onError(event: FormErrorEvent) {
 <template>
   <div class="container">
     <div class="mx-auto my-auto flex flex-row pb-24">
-      <UForm :validate="validate" :state="state" class="space-y-4" @submit="onSubmit" @error="onError">
+      <UForm
+        :validate="validate"
+        :state="state"
+        class="space-y-4"
+        @submit="onSubmit"
+        @error="onError"
+      >
         <UFormField label="Host" name="host">
           <UInput v-model="state.host" />
         </UFormField>
-        
+
         <UFormField label="Account" name="account">
           <UInput v-model="state.account" />
         </UFormField>
@@ -87,9 +97,7 @@ async function onError(event: FormErrorEvent) {
           <UInput v-model="state.password" type="password" />
         </UFormField>
 
-        <UButton type="submit" loading-auto>
-          Submit
-        </UButton>
+        <UButton type="submit" loading-auto> Submit </UButton>
       </UForm>
     </div>
   </div>

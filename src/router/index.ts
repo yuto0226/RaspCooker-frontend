@@ -6,7 +6,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue')
+      component: () => import('../views/LoginView.vue'),
     },
     {
       path: '/',
@@ -16,30 +16,30 @@ const router = createRouter({
         {
           path: '/file',
           name: 'file',
-          component: () => import('../views/FileView.vue')
+          component: () => import('../views/FileView.vue'),
         },
         {
           path: '/task',
           name: 'task',
-          component: () => import('../views/TaskView.vue')
+          component: () => import('../views/TaskView.vue'),
         },
         {
           path: '/task/:id',
           name: 'task_result',
-          component: () => import('../views/TaskResultView.vue')
+          component: () => import('../views/TaskResultView.vue'),
         },
         {
           path: '/shell',
           name: 'shell',
-          component: () => import('../views/ShellView.vue')
+          component: () => import('../views/ShellView.vue'),
         },
         {
           path: '/settings',
           name: 'settings',
-          component: () => import('../views/SettingsView.vue')
+          component: () => import('../views/SettingsView.vue'),
         },
-      ]
-    }
+      ],
+    },
   ],
 })
 
