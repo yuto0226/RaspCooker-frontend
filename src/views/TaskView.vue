@@ -25,14 +25,21 @@ function fetchTasks() {
   loading.value = true
   api.get('/task').then((response: { data: { tasks: Task[] } }) => {
     data.value = response.data.tasks
-      .map((task: any) => ({
-        uuid: task.uuid,
-        file_path: task.file_path,
-        state: task.state,
-        start_time: new Date(task.start_time).toLocaleString(),
-        term_time: new Date(task.term_time).toLocaleString(),
-        interval: Math.floor((new Date(task.term_time).getTime() - new Date(task.start_time).getTime()) / 1000),
-      }))
+      .map((task: any) => {
+        const termTime = task.term_time ? new Date(task.term_time).getTime() : Date.now()
+        const interval = task.state === 'WAITING'
+          ? 0 // WAITING 狀態不計算 interval
+          : (termTime - new Date(task.start_time).getTime()) / 1000 // 保留小數點
+        return {
+          uuid: task.uuid,
+          file_path: task.file_path,
+          state: task.state,
+          start_time: new Date(task.start_time).toLocaleString(),
+          term_time: task.term_time ? new Date(task.term_time).toLocaleString() : 'N/A',
+          interval: interval > 0 ? interval : 0 // 避免負值
+        }
+      })
+      .reverse() // 反轉資料 array
   }).catch((error: AxiosError) => {
     if (error.response) {
       console.error('Server responded with an error:', error.response)
@@ -100,9 +107,17 @@ const columns: TableColumn<Task>[] = [
     }
   },
   {
+    accessorKey: 'start_time',
+    header: createSortableHeader('Start Time'), // 加入排序功能
+    cell: ({ row }) => `${row.getValue('start_time')}`
+  },
+  {
     accessorKey: 'interval',
     header: createSortableHeader('Interval (s)'), // 加入排序功能
     cell: ({ row }) => `${row.getValue('interval')} s`
+  },
+  {
+    id: 'action'
   }
 ]
 
@@ -110,6 +125,37 @@ const pagination = ref({
   pageIndex: 0,
   pageSize: 8
 })
+
+function handleDelete(task) {
+
+}
+
+function getDropdownActions(file: File): DropdownMenuItem[][] {
+  return [
+    [
+      {
+        label: 'Copy file name',
+        icon: 'i-lucide-copy',
+        onSelect: () => {
+          navigator.clipboard.writeText(file.name)
+          toast.add({
+            title: 'File name copied to clipboard!',
+            color: 'success',
+            icon: 'i-lucide-circle-check'
+          })
+        }
+      }
+    ],
+    [
+      {
+        label: 'Delete',
+        icon: 'i-lucide-trash',
+        color: 'error',
+        onSelect: () => handleDelete(file)
+      }
+    ]
+  ]
+}
 </script>
 
 <template>
@@ -119,10 +165,16 @@ const pagination = ref({
       <UPagination :default-page="pagination.pageIndex + 1" :items-per-page="pagination.pageSize" :total="data.length"
         @update:page="(p: number) => pagination.pageIndex = p - 1" />
     </div>
-    <UTable :loading="loading" v-model:pagination="pagination" v-model:global-filter="globalFilter" :data="data" :columns="columns"
-      :pagination-options="{
+    <UTable :loading="loading" v-model:pagination="pagination" v-model:global-filter="globalFilter" :data="data"
+      :columns="columns" :pagination-options="{
         getPaginationRowModel: getPaginationRowModel()
-      }" />
+      }">
+      <template #action-cell="{ row }">
+        <UDropdownMenu :items="getDropdownActions(row.original)">
+          <UButton icon="i-lucide-ellipsis-vertical" color="neutral" variant="ghost" aria-label="Actions" />
+        </UDropdownMenu>
+      </template>
+    </UTable>
   </div>
 </template>
 
